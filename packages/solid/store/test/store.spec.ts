@@ -968,8 +968,7 @@ describe("Nested Classes", () => {
   setStore("a", v);
   setStore("b", "a", "c");
   setStore("b", v, "c");
-  // @ts-expect-error TODO generic should index Record
-  setStore("c", v, "c");
+  setStore("c" as const, v, "c");
   const b = store.c[v];
   const c: typeof b = "1";
   const d = a.c[v];

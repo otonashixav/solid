@@ -486,7 +486,25 @@ export interface SetStoreFunction<T> {
     k7: Part<W<W<W<W<W<W<W<T>[K1]>[K2]>[K3]>[K4]>[K5]>[K6]>, K7>,
     ...rest: Rest<W<W<W<W<W<W<W<T>[K1]>[K2]>[K3]>[K4]>[K5]>[K6]>[K7], [K7, K6, K5, K4, K3, K2, K1]>
   ): void;
+  <Args extends readonly unknown[]>(...args: ValidateSetterArgs<T, Args> & Args): void;
 }
+
+// fallback path for when `T` or some keys are generic; intellisense will not work
+type ValidateSetterArgs<T, TArgs> = [TArgs] extends [
+  [T | Partial<T> | ((prev: T) => T | Partial<T>)]
+]
+  ? unknown
+  : TArgs extends [infer Head, ...infer Rest]
+  ? [Head] extends [keyof T]
+    ? ValidateSetterArgs<T[Head], Rest>
+    : [Head] extends [readonly (keyof T)[]]
+    ? ValidateSetterArgs<T[Head[number]], Rest>
+    : [Head] extends [Function]
+    ? [T] extends [readonly unknown[]]
+      ? ValidateSetterArgs<T[number], Rest>
+      : never
+    : never
+  : never;
 
 /**
  * creates a reactive store that can be read through a proxy object and written with a setter function
@@ -516,3 +534,9 @@ export function createStore<T extends object = {}>(
 
   return [wrappedStore, setStore];
 }
+
+export const createForm = <T extends object>() => {
+  const [errors, setErrors] = createStore<Partial<Record<keyof T, string[]>>>({});
+  const someField = "name" as keyof T;
+  setErrors(someField, ["error"]);
+};
