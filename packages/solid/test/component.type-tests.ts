@@ -194,3 +194,7 @@ type TestS2 = Assert<IsExact<S2, { b: number }>>;
 const [s3] = splitProps({ a: 1, b: 2 }, ["a"]);
 type S3 = typeof s3;
 type TestS3 = Assert<IsExact<S3, { a: number }>>;
+
+const s4 = splitProps({ a: 1 } as { a?: number } | { a?: number; b?: number }, ["a"]);
+type S4 = typeof s4;
+type TestS4 = Assert<IsExact<S4, [{ a?: number } | { a?: number }, {} | { b?: number }]>>;

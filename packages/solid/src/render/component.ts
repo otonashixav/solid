@@ -267,11 +267,9 @@ export function mergeProps<T extends unknown[]>(...sources: T): MergeProps<T> {
 
 export type SplitProps<T, K extends (readonly (keyof T)[])[]> = [
   ...{
-    [P in keyof K]: P extends `${number}`
-      ? Pick<T, Extract<K[P], readonly (keyof T)[]>[number]>
-      : never;
+    [I in keyof K]: { [P in keyof T as P extends K[I][number] ? P : never]: T[P] };
   },
-  Omit<T, K[number][number]>
+  { [P in keyof T as P extends K[number][number] ? never : P]: T[P] }
 ];
 
 export function splitProps<
@@ -312,7 +310,7 @@ export function splitProps<
         propTraps
       )
     );
-    return res as SplitProps<T, K>;
+    return res as unknown as SplitProps<T, K>;
   }
   const otherObject: Record<string, any> = {};
   const objects: Record<string, any>[] = keys.map(() => ({}));
